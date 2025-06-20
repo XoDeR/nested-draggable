@@ -4,6 +4,6 @@ import ItemN from './components/ItemN.vue'
 </script>
 
 <template>
-  <!-- <Item /> -->
-  <ItemN />
+  <Item />
+  <!-- <ItemN /> -->
 </template>
