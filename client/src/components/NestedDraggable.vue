@@ -24,11 +24,34 @@ const model = computed({
     emit('update:modelValue', newValue);
   },
 });
+
+// Position tracking
+let dragStartX = 0
+
+function onStart(evt) {
+  dragStartX = evt.originalEvent.clientX
+}
+
+function onEnd(evt) {
+  const dropX = evt.originalEvent.clientX
+  const delta = dropX - dragStartX
+
+  // Experimental indent threshold
+  if (delta > 40) {
+    const dragged = evt.item.__vue__.item
+    const parent = model.value[evt.newIndex - 1]
+    if (parent) {
+      parent.children = parent.children || []
+      parent.children.push(dragged)
+      model.value.splice(evt.newIndex, 1)
+    }
+  }
+}
 </script>
 
 <template>
   <VueDraggable class="drag-area" tag="div" v-model="model" group="g1" item-key="name" :fallbackOnBody="true"
-    :swapThreshold="0.65">
+    :swapThreshold="0.65" ghost-class="drag-ghost" @start="onStart" @end="onEnd">
     <div v-for="el in model" :key="el.name" class="draggable-item">
       <p>{{ el.name }}</p>
       <p>{{ el.name }}</p>
@@ -53,10 +76,11 @@ li {
 } */
 
 .draggable-item {
-  margin-bottom: 8px;
-  background: #f9f9f9;
-  padding: 10px;
+  /* margin: 8px 0; */
+  padding: 0px 14px;
   border-radius: 6px;
+  background: #f9f9f9;
+  box-sizing: border-box;
 }
 
 .drag-area {
@@ -65,7 +89,19 @@ li {
   list-style-type: none;
 }
 
-li {
+.nested-indent {
+  margin-left: 24px;
+  padding-left: 0;
+  /* border-left: 2px dashed #ccc; */
+  /* padding-left: 12px; */
+}
+
+.drag-ghost {
+  opacity: 0.6;
+  position: relative;
+}
+
+/* li {
   background: white;
   border: 1px solid #e0e0e0;
   border-radius: 6px;
@@ -85,11 +121,5 @@ li:hover {
 
 .vue-draggable-item:active {
   cursor: grabbing;
-}
-
-.nested-indent {
-  margin-left: 24px;
-  /* border-left: 2px dashed #ccc; */
-  padding-left: 12px;
-}
+} */
 </style>
