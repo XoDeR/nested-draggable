@@ -30,6 +30,7 @@ const model = computed({
   <VueDraggable class="drag-area" tag="ul" v-model="model" group="g1" item-key="name">
     <li v-for="el in model" :key="el.name">
       <p>{{ el.name }}</p>
+      <p>{{ el.name }}</p>
       <NestedDraggable v-if="el.children" v-model="el.children" />
     </li>
   </VueDraggable>
@@ -37,8 +38,8 @@ const model = computed({
 
 <style scoped>
 .drag-area {
-  min-height: 50px;
-  outline: 1px dashed #ccc;
+  min-height: 20px;
+  outline: 1px dashed red;
   padding: 10px;
   margin: 5px;
 }
