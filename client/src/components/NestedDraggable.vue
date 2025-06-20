@@ -27,13 +27,13 @@ const model = computed({
 </script>
 
 <template>
-  <VueDraggable class="drag-area" tag="ul" v-model="model" group="g1" item-key="name" :fallbackOnBody="true"
+  <VueDraggable class="drag-area" tag="div" v-model="model" group="g1" item-key="name" :fallbackOnBody="true"
     :swapThreshold="0.65">
-    <li v-for="el in model" :key="el.name">
+    <div v-for="el in model" :key="el.name" class="draggable-item">
       <p>{{ el.name }}</p>
       <p>{{ el.name }}</p>
       <NestedDraggable v-if="el.children" v-model="el.children" class="nested-indent" />
-    </li>
+    </div>
   </VueDraggable>
 </template>
 
@@ -51,6 +51,13 @@ li {
   padding: 8px;
   cursor: grab;
 } */
+
+.draggable-item {
+  margin-bottom: 8px;
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 6px;
+}
 
 .drag-area {
   padding-left: 0;
@@ -82,7 +89,7 @@ li:hover {
 
 .nested-indent {
   margin-left: 24px;
-  border-left: 2px dashed #ccc;
+  /* border-left: 2px dashed #ccc; */
   padding-left: 12px;
 }
 </style>
