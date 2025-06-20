@@ -1,1 +1,5 @@
 @import 'tailwindcss';
+
+.drag-ghost {
+  @apply opacity-60 relative;
+}

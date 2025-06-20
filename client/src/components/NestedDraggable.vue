@@ -50,12 +50,13 @@ function onEnd(evt) {
 </script>
 
 <template>
-  <VueDraggable class="drag-area" tag="div" v-model="model" group="g1" item-key="name" :fallbackOnBody="true"
+  <VueDraggable class="pl-0 m-0 list-none" tag="div" v-model="model" group="g1" item-key="name" :fallbackOnBody="true"
     :swapThreshold="0.65" ghost-class="drag-ghost" @start="onStart" @end="onEnd">
-    <div v-for="el in model" :key="el.name" class="draggable-item">
+    <div v-for="el in model" :key="el.name"
+      class="px-[14px] py-0 rounded-md bg-neutral-100 dark:bg-neutral-800 box-border">
       <p>{{ el.name }}</p>
       <p>{{ el.name }}</p>
-      <NestedDraggable v-if="el.children" v-model="el.children" class="nested-indent" />
+      <NestedDraggable v-if="el.children" v-model="el.children" class="ml-6 pl-0" />
     </div>
   </VueDraggable>
 </template>
@@ -75,15 +76,14 @@ li {
   cursor: grab;
 } */
 
-.draggable-item {
-  /* margin: 8px 0; */
+/* .draggable-item {
   padding: 0px 14px;
   border-radius: 6px;
   background: #f9f9f9;
   box-sizing: border-box;
-}
+} */
 
-.drag-area {
+/* .drag-area {
   padding-left: 0;
   margin: 0;
   list-style-type: none;
@@ -92,14 +92,14 @@ li {
 .nested-indent {
   margin-left: 24px;
   padding-left: 0;
-  /* border-left: 2px dashed #ccc; */
-  /* padding-left: 12px; */
 }
 
-.drag-ghost {
+*/
+
+/* .drag-ghost {
   opacity: 0.6;
   position: relative;
-}
+} */
 
 /* li {
   background: white;
