@@ -1,18 +1,32 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, toRaw } from 'vue';
 import ItemDraggableList from './ItemDraggableList.vue';
 
-const list = ref([
-  { name: 'item 1', children: [{ name: 'item 2', children: [] }] },
-  { name: 'item 3', children: [{ name: 'item 4', children: [] }] },
-  { name: 'item 5', children: [] },
-]);
+const props = defineProps({
+  items: {
+    type: Array,
+    required: true,
+  },
+});
+
+// copy to use with v-model
+const localItems = ref(structuredClone(toRaw(props.items)));
+
+// update when props are updated
+watch(
+  () => props.items,
+  (newItems) => {
+    localItems.value = structuredClone(toRaw(newItems));
+  },
+  { deep: true },
+);
+
 </script>
 
 <template>
   <div class="flex justify-between">
-    <ItemDraggableList v-model="list" class="w-full">
+    <ItemDraggableList v-model="localItems" class="w-full">
     </ItemDraggableList>
-    <pre>{{ JSON.stringify(list, null, 2) }}</pre>
+    <pre>{{ JSON.stringify(localItems, null, 2) }}</pre>
   </div>
 </template>
