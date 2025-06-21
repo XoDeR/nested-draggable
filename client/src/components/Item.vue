@@ -1,19 +1,17 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import Items from './Items.vue'
+import { useMockServer } from '@/composables/useMockServer'
 
-const mockFetchItems = () => {
-  items.value = [
-    { name: 'item 1', children: [{ name: 'item 2', children: [] }] },
-    { name: 'item 3', children: [{ name: 'item 4', children: [] }] },
-    { name: 'item 5', children: [] },
-  ]
-}
+const mockServer = useMockServer()
 
 const items = ref([]);
 
-onMounted(() => {
-  mockFetchItems()
+onMounted(async () => {
+  await mockServer.init()
+  const rawJson = await mockServer.getItemWithSubItems()
+  items.value = JSON.parse(rawJson)
+  console.log(items.value)
 })
 </script>
 
