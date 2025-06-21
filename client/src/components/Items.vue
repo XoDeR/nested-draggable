@@ -7,10 +7,21 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  nodeUuid: {
+    type: String,
+    required: true,
+  }
 });
 
 // copy to use with v-model
 const localItems = ref(structuredClone(toRaw(props.items)));
+
+// List of {uuid, order, parent} to send
+// Order is normalized e.g.: [0, 1, 2, 3]
+// for changes to send normalized orders are to be transformed to sparse orders
+const changes = ref([]);
+// normalized orders are mapped to sparse orders
+const changesToSend = ref([]);
 
 // converts nested list to a map to track changes for every item
 const mapFromNestedList = (items, parentUuid = null) => {
@@ -28,12 +39,41 @@ const mapFromNestedList = (items, parentUuid = null) => {
 }
 
 
-// Called every time drag is finished or updated data retrieved from the server 
+// Called every time there are changes in a list
+// Note: may be called twice if a child item is removed from one parent and assigned to another 
 const trackChanges = () => {
-  console.log("item changed");
+  const previousStateMap = mapFromNestedList(props.items, props.nodeUuid);
+  const currentStateMap = mapFromNestedList(localItems.value, props.nodeUuid);
+  const newChanges = [];
+  for (const uuid in currentStateMap) {
+    const currentState = currentStateMap[uuid];
+    const previousState = previousStateMap[uuid];
 
-  const previousStateMap = mapFromNestedList(props.items);
-  console.log("previousStateMap", previousStateMap);
+    // Item is new. Currently should not happen
+    if (!previousState) {
+      continue;
+    }
+
+    // either order or parent changed
+    if (currentState.order !== previousState.order || currentState.parent !== previousState.parent) {
+      let newOrder = null; // null means no changes should be done
+      let newParent = null;
+      if (currentState.order !== previousState.order) newOrder = currentState.order;
+      if (currentState.parent !== previousState.paren) newParent = currentState.parent;
+      newChanges.push({
+        uuid: uuid,
+        order: newOrder,
+        parent: newParent,
+      });
+    }
+  }
+  changes.value = newChanges;
+  console.log("changes", changes.value);
+}
+
+const resetChanges = () => {
+  changes.value = [];
+  changesToSend.value = [];
 }
 
 // update when props are updated
@@ -42,7 +82,7 @@ watch(
   (newItems) => {
     // update state with data retreived from server
     localItems.value = structuredClone(toRaw(newItems));
-    trackChanges();
+    resetChanges();
   },
   { deep: true },
 );

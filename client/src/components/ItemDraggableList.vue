@@ -63,7 +63,7 @@ const emitNestedChanged = () => {
     <div v-for="el in model" :key="el.name"
       class="px-[14px] py-0 rounded-md bg-neutral-100 dark:bg-neutral-800 box-border">
       <p>{{ el.name }}</p>
-      <p>{{ el.name }}</p>
+      <p>{{ el.uuid }}</p>
       <ItemDraggableList v-if="el.children" v-model="el.children" class="ml-6 pl-0"
         @nested-changed="emitNestedChanged" />
     </div>
