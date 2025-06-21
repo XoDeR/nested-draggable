@@ -13,6 +13,8 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['send-reordered-items'])
+
 // copy to use with v-model
 const localItems = ref(structuredClone(toRaw(props.items)));
 
@@ -59,7 +61,7 @@ const trackChanges = () => {
       let newOrder = null; // null means no changes should be done
       let newParent = null;
       if (currentState.order !== previousState.order) newOrder = currentState.order;
-      if (currentState.parent !== previousState.paren) newParent = currentState.parent;
+      if (currentState.parent !== previousState.parent) newParent = currentState.parent;
       newChanges.push({
         uuid: uuid,
         order: newOrder,
@@ -68,7 +70,6 @@ const trackChanges = () => {
     }
   }
   changes.value = newChanges;
-  console.log("changes", changes.value);
 }
 
 const resetChanges = () => {
@@ -87,9 +88,50 @@ watch(
   { deep: true },
 );
 
+const resetChangesAndState = () => {
+  localItems.value = structuredClone(toRaw(props.items));
+  resetChanges();
+  alert('Changes reset');
+}
+
+const sparseOrdersFromNormalized = (changes) => {
+  // TODO implement
+  return changes;
+}
+
+const saveChanges = () => {
+  console.log('Sending changes to server:', changesToSend.value);
+
+  changesToSend.value = sparseOrdersFromNormalized(changes.value);
+
+  // there would be a call to server
+  // now it's emulated
+  emit('send-reordered-items', changesToSend.value);
+};
+
+const onChangesSaved = () => {
+  console.log('Changes saved from child!')
+  // clear changes after sending
+  resetChanges();
+}
+
+defineExpose({ onChangesSaved })
+
 </script>
 
 <template>
+  <button @click="saveChanges" :disabled="!changes.length" :class="[
+    'm-2 p-1 border rounded',
+    !changes.length ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+  ]">
+    Save changes
+  </button>
+  <button @click="resetChangesAndState" :disabled="!changes.length" :class="[
+    'm-2 p-1 border rounded',
+    !changes.length ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+  ]">
+    Reset changes and state
+  </button>
   <div class="flex justify-between">
     <ItemDraggableList v-model="localItems" class="w-full" @nested-changed="trackChanges" />
     <pre>{{ JSON.stringify(localItems, null, 2) }}</pre>

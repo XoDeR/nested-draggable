@@ -24,10 +24,23 @@ const resetData = async () => {
   items.value = nodeItem.children
   nodeUuid.value = nodeItem.uuid
 }
+
+const sendReorderedItemsToServer = async (itemsToSend) => {
+  console.log("itemsToSend", itemsToSend);
+
+  //await mockServer.reorderItems(JSON.stringify(itemsToSend))
+
+  if (childRef.value?.onChangesSaved) {
+    childRef.value.onChangesSaved()
+  }
+}
+
+const childRef = ref(null)
+
 </script>
 
 <template>
   <!-- Only for debugging -->
   <button @click="resetData" class="m-2 p-1 border">Reset Data</button>
-  <Items :items="items" :nodeUuid="nodeUuid" />
+  <Items :items="items" :nodeUuid="nodeUuid" @send-reordered-items="sendReorderedItemsToServer" ref="childRef" />
 </template>

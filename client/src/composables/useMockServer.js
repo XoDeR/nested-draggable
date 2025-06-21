@@ -125,6 +125,8 @@ export function useMockServer() {
   async function reorderItems(newJson) {
     try {
       const newData = JSON.parse(newJson)
+
+
       data.value = newData
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newData))
     } catch (err) {
