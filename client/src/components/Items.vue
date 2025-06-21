@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import NestedDraggable from './NestedDraggable.vue'; // Adjust path as needed
+import ItemDraggableList from './ItemDraggableList.vue';
 
 const list = ref([
   { name: 'item 1', children: [{ name: 'item 2', children: [] }] },
@@ -11,7 +11,8 @@ const list = ref([
 
 <template>
   <div class="flex justify-between">
-    <NestedDraggable v-model="list" class="w-full"></NestedDraggable>
+    <ItemDraggableList v-model="list" class="w-full">
+    </ItemDraggableList>
     <pre>{{ JSON.stringify(list, null, 2) }}</pre>
   </div>
 </template>
