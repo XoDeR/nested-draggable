@@ -125,10 +125,21 @@ export function useMockServer() {
   async function reorderItems(newJson) {
     try {
       const newData = JSON.parse(newJson)
-
-
-      data.value = newData
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newData))
+      // map uses references, so data in data.value will be updated
+      const dataMap = new Map(data.value.map(item => [item.uuid, item]))
+      for (const update of newData) {
+        const existing = dataMap.get(update.uuid)
+        if (existing) {
+          if (update.order !== null) {
+            existing.order = update.order
+          }
+          if (update.parent !== null) {
+            existing.parent = update.parent
+          }
+        }
+      }
+      console.log("server data", data.value);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.value))
     } catch (err) {
       console.error('Failed to reorder items:', err)
     }

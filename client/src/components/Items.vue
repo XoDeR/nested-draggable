@@ -94,15 +94,69 @@ const resetChangesAndState = () => {
   alert('Changes reset');
 }
 
-const sparseOrdersFromNormalized = (changes) => {
-  // TODO implement
-  return changes;
+const sparseOrdersFromNormalized = (changes, previousItems) => {
+  const itemToParent = new Map()
+  const parentToSparseList = new Map()
+
+  // map item uuid to parent's uuid and map uuid to a list of sparse orders
+  function processNestedList(nestedList, parentId = null) {
+    for (const item of nestedList) {
+      itemToParent.set(item.uuid, parentId)
+      const children = item.children || []
+      if (!parentToSparseList.has(item.uuid)) {
+        parentToSparseList.set(
+          item.uuid,
+          children.map(childItem => childItem.order)
+        )
+      }
+      processNestedList(children, item.uuid)
+    }
+  }
+
+  const nodeParentUuid = props.nodeUuid;
+  processNestedList(previousItems, nodeParentUuid)
+  // Node (root of all other items) item should be added explicitly
+  // to parentToSparseList
+  // as it is not in the nested list
+  parentToSparseList.set(
+    nodeParentUuid,
+    previousItems.map(childItem => childItem.order)
+  )
+
+  return changes.map(change => {
+    const parentId = change.parent ?? itemToParent.get(change.uuid)
+    const sparseList = parentToSparseList.get(parentId) || []
+    const normalizedIndex = change.order
+
+    let sparseOrder;
+
+    if (normalizedIndex === null) {
+      sparseOrder = null; // null means order has the same value and should not be changed
+    }
+    else if (normalizedIndex < sparseList.length) {
+      // Use existing sparse order at the same index
+      sparseOrder = sparseList[normalizedIndex]
+    } else {
+      const lastSparse = sparseList.length > 0 ? sparseList[sparseList.length - 1] : -1
+      const diff = normalizedIndex - (sparseList.length - 1)
+      sparseOrder = lastSparse + diff
+    }
+
+    if (change.uuid === "ACAA") {
+      console.log("sparseOrder", parentToSparseList);
+    }
+
+    return {
+      ...change,
+      order: sparseOrder,
+    }
+  })
 }
 
 const saveChanges = () => {
-  console.log('Sending changes to server:', changesToSend.value);
-
-  changesToSend.value = sparseOrdersFromNormalized(changes.value);
+  console.log("Norm", changes.value);
+  changesToSend.value = sparseOrdersFromNormalized(changes.value, props.items);
+  console.log("Sparse", changesToSend.value);
 
   // there would be a call to server
   // now it's emulated
@@ -117,6 +171,7 @@ const onChangesSaved = () => {
 
 defineExpose({ onChangesSaved })
 
+console.log(toRaw(props.items))
 </script>
 
 <template>

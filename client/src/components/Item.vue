@@ -28,11 +28,17 @@ const resetData = async () => {
 const sendReorderedItemsToServer = async (itemsToSend) => {
   console.log("itemsToSend", itemsToSend);
 
-  //await mockServer.reorderItems(JSON.stringify(itemsToSend))
+  await mockServer.reorderItems(JSON.stringify(itemsToSend))
 
   if (childRef.value?.onChangesSaved) {
     childRef.value.onChangesSaved()
   }
+
+  // emulate fetching updated data from server
+  const rawJson = await mockServer.getItemWithSubItems()
+  const nodeItem = JSON.parse(rawJson)
+  items.value = nodeItem.children
+  nodeUuid.value = nodeItem.uuid
 }
 
 const childRef = ref(null)
