@@ -12,7 +12,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'nested-changed']);
 
 const model = computed({
   get() {
@@ -45,16 +45,27 @@ function onEnd(evt) {
     }
   }
 }
+
+// Triggered whenever any changes are made to the list
+function onSort(evt) {
+  emit('nested-changed');
+}
+
+// Propagate change event from nested children up
+const emitNestedChanged = () => {
+  emit('nested-changed');
+}
 </script>
 
 <template>
   <VueDraggable class="pl-0 m-0 list-none" tag="div" v-model="model" group="g1" item-key="name" :fallbackOnBody="true"
-    :swapThreshold="0.65" ghost-class="drag-ghost" @start="onStart" @end="onEnd">
+    :swapThreshold="0.65" ghost-class="drag-ghost" @start="onStart" @end="onEnd" @sort="onSort">
     <div v-for="el in model" :key="el.name"
       class="px-[14px] py-0 rounded-md bg-neutral-100 dark:bg-neutral-800 box-border">
       <p>{{ el.name }}</p>
       <p>{{ el.name }}</p>
-      <ItemDraggableList v-if="el.children" v-model="el.children" class="ml-6 pl-0" />
+      <ItemDraggableList v-if="el.children" v-model="el.children" class="ml-6 pl-0"
+        @nested-changed="emitNestedChanged" />
     </div>
   </VueDraggable>
 </template>
