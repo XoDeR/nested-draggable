@@ -1,6 +1,6 @@
 <script setup>
 import { VueDraggable } from 'vue-draggable-plus';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 // Recursive component
 import ItemDraggableList from './ItemDraggableList.vue';
@@ -55,11 +55,14 @@ function onSort(evt) {
 const emitNestedChanged = () => {
   emit('nested-changed');
 }
+
+const isDraggable = ref(true); // whether drag-and-drop behavior enabled
 </script>
 
 <template>
   <VueDraggable class="pl-0 m-0 list-none" tag="div" v-model="model" group="g1" item-key="name" :fallbackOnBody="true"
-    :swapThreshold="0.65" ghost-class="drag-ghost" @start="onStart" @end="onEnd" @sort="onSort">
+    :swapThreshold="0.65" ghost-class="drag-ghost" @start="onStart" @end="onEnd" @sort="onSort"
+    :disabled="!isDraggable">
     <div v-for="el in model" :key="el.name"
       class="px-[14px] py-0 rounded-md bg-neutral-100 dark:bg-neutral-800 box-border">
       <p>{{ el.name }}</p>
