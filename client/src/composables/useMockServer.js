@@ -4,29 +4,36 @@ const LOCAL_STORAGE_KEY = 'mock-server-items'
 
 const expectedInitialData = {
   uuid: 'AAAA',
-  modelType: 'Aaaa',
-  type: 'nodeRoot',
   name: 'Root item',
+  type: 'pppp',
+  tag: 'nodeRoot',
   parent: null,
+  parentType: null,
   order: 0,
   children: [
     {
       uuid: 'ABAA',
       name: 'Item 0001',
+      type: 'qqqq',
       parent: 'AAAA',
+      parentType: 'pppp',
       order: 0,
       children: [
         {
           uuid: 'ABBA',
           name: 'Item 0004',
+          type: 'qqqq',
           parent: 'ABAA',
+          parentType: 'qqqq',
           order: 0,
           children: [],
         },
         {
           uuid: 'ABCA',
           name: 'Item 0006',
+          type: 'qqqq',
           parent: 'ABAA',
+          parentType: 'qqqq',
           order: 2,
           children: [],
         },
@@ -35,13 +42,17 @@ const expectedInitialData = {
     {
       uuid: 'ACAA',
       name: 'Item 0002',
+      type: 'qqqq',
       parent: 'AAAA',
+      parentType: 'pppp',
       order: 2,
       children: [
         {
           uuid: 'ACBA',
           name: 'Item 0005',
+          type: 'qqqq',
           parent: 'ACAA',
+          parentType: 'qqqq',
           order: 0,
           children: [],
         },
@@ -50,7 +61,9 @@ const expectedInitialData = {
     {
       uuid: 'ADAA',
       name: 'Item 0003',
+      type: 'qqqq',
       parent: 'AAAA',
+      parentType: 'pppp',
       order: 5,
       children: [],
     },
@@ -79,7 +92,7 @@ function treeFromList(list) {
   let root = null
 
   for (const item of nodeMap.values()) {
-    if (item.type === 'nodeRoot') {
+    if (item.tag === 'nodeRoot') {
       root = item
     } else if (item.parent && nodeMap.has(item.parent)) {
       const parent = nodeMap.get(item.parent)
@@ -95,16 +108,7 @@ export function useMockServer() {
   const data = ref([])
 
   async function reset() {
-    // Initialize with default mock data
-    /*
-    data.value = [
-      { name: 'item 1', children: [{ name: 'item 2', children: [] }] },
-      { name: 'item 3', children: [{ name: 'item 4', children: [] }] },
-      { name: 'item 5', children: [] },
-    ]
-    */
     data.value = listFromTree(expectedInitialData)
-
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.value))
   }
 
@@ -135,6 +139,9 @@ export function useMockServer() {
           }
           if (update.parent !== null) {
             existing.parent = update.parent
+            if (update.parentType !== null) {
+              existing.parentType = update.parentType
+            }
           }
         }
       }

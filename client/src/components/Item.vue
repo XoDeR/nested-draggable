@@ -7,13 +7,15 @@ const mockServer = useMockServer()
 
 const items = ref([]);
 const nodeUuid = ref();
+const nodeType = ref();
 
 onMounted(async () => {
   await mockServer.init()
   const rawJson = await mockServer.getItemWithSubItems()
   const nodeItem = JSON.parse(rawJson)
-  items.value = nodeItem.children
-  nodeUuid.value = nodeItem.uuid
+  items.value = nodeItem?.children || [];
+  nodeUuid.value = nodeItem?.uuid || null;
+  nodeType.value = nodeItem?.type || null;
 })
 
 // Only for debugging
@@ -48,5 +50,6 @@ const childRef = ref(null)
 <template>
   <!-- Only for debugging -->
   <button @click="resetData" class="m-2 p-1 border">Reset Data</button>
-  <Items :items="items" :nodeUuid="nodeUuid" @send-reordered-items="sendReorderedItemsToServer" ref="childRef" />
+  <Items :items="items" :nodeUuid="nodeUuid" :nodeType="nodeType" @send-reordered-items="sendReorderedItemsToServer"
+    ref="childRef" />
 </template>

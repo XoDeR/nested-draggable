@@ -10,7 +10,11 @@ const props = defineProps({
   nodeUuid: {
     type: String,
     required: true,
-  }
+  },
+  nodeType: {
+    type: String,
+    required: true,
+  },
 });
 
 const emit = defineEmits(['send-reordered-items'])
@@ -25,13 +29,14 @@ const changes = ref([]);
 // normalized orders are mapped to sparse orders
 const changesToSend = ref([]);
 
-// converts nested list to a map to track changes for every item
+// Converts nested list to a map to track changes for every item
 const mapFromNestedList = (items, parentUuid = null) => {
   let flatMap = {};
   items.forEach((item, index) => {
     flatMap[item.uuid] = {
       order: index,
       parent: parentUuid,
+      type: item.type,
     };
     if (item.children && item.children.length) {
       Object.assign(flatMap, mapFromNestedList(item.children, item.uuid));
@@ -56,16 +61,29 @@ const trackChanges = () => {
       continue;
     }
 
-    // either order or parent changed
+    // Either order or parent changed
     if (currentState.order !== previousState.order || currentState.parent !== previousState.parent) {
       let newOrder = null; // null means no changes should be done
       let newParent = null;
+      let newParentType = null;
+      // Properties order, parent, parentType of the individual item are changed in the nested list localItems
+      // only after new changes are saved and retrieved from the server
       if (currentState.order !== previousState.order) newOrder = currentState.order;
-      if (currentState.parent !== previousState.parent) newParent = currentState.parent;
+      if (currentState.parent !== previousState.parent) {
+        newParent = currentState.parent;
+        // assign new parent type
+        if (newParent === props.nodeUuid) {
+          // parent is node (root) item
+          newParentType = props.nodeType;
+        } else {
+          newParentType = currentStateMap[newParent].type;
+        }
+      }
       newChanges.push({
         uuid: uuid,
         order: newOrder,
         parent: newParent,
+        parentType: newParentType,
       });
     }
   }
@@ -116,8 +134,7 @@ const sparseOrdersFromNormalized = (changes, previousItems) => {
   const nodeParentUuid = props.nodeUuid;
   processNestedList(previousItems, nodeParentUuid)
   // Node (root of all other items) item should be added explicitly
-  // to parentToSparseList
-  // as it is not in the nested list
+  // to parentToSparseList as it is not in the nested list
   parentToSparseList.set(
     nodeParentUuid,
     previousItems.map(childItem => childItem.order)
@@ -141,11 +158,6 @@ const sparseOrdersFromNormalized = (changes, previousItems) => {
       const diff = normalizedIndex - (sparseList.length - 1)
       sparseOrder = lastSparse + diff
     }
-
-    if (change.uuid === "ACAA") {
-      console.log("sparseOrder", parentToSparseList);
-    }
-
     return {
       ...change,
       order: sparseOrder,
@@ -170,8 +182,7 @@ const onChangesSaved = () => {
 }
 
 defineExpose({ onChangesSaved })
-
-console.log(toRaw(props.items))
+// console.log(toRaw(props.items))
 </script>
 
 <template>
