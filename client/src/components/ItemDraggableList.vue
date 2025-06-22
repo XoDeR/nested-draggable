@@ -10,6 +10,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  isDraggable: {
+    type: Boolean,
+    default: true,
+  }
 });
 
 const emit = defineEmits(['update:modelValue', 'nested-changed']);
@@ -56,7 +60,6 @@ const emitNestedChanged = () => {
   emit('nested-changed');
 }
 
-const isDraggable = ref(true); // whether drag-and-drop behavior enabled
 </script>
 
 <template>
@@ -67,8 +70,8 @@ const isDraggable = ref(true); // whether drag-and-drop behavior enabled
       class="px-[14px] py-0 rounded-md bg-neutral-100 dark:bg-neutral-800 box-border">
       <p>{{ el.name }}</p>
       <p>{{ el.uuid }}</p>
-      <ItemDraggableList v-if="el.children" v-model="el.children" class="ml-6 pl-0"
-        @nested-changed="emitNestedChanged" />
+      <ItemDraggableList v-if="el.children" v-model="el.children" class="ml-6 pl-0" @nested-changed="emitNestedChanged"
+        :isDraggable="isDraggable" />
     </div>
   </VueDraggable>
 </template>

@@ -182,7 +182,13 @@ const onChangesSaved = () => {
 }
 
 defineExpose({ onChangesSaved })
-// console.log(toRaw(props.items))
+
+const reorderEnabled = ref(true);
+
+const toggleReorderEnabled = () => {
+  reorderEnabled.value = !reorderEnabled.value;
+}
+
 </script>
 
 <template>
@@ -198,8 +204,13 @@ defineExpose({ onChangesSaved })
   ]">
     Reset changes and state
   </button>
+  <button @click="toggleReorderEnabled" class="p-2 m-2 border rounded">
+    {{ reorderEnabled ? 'Disable reordering' : 'Enable reordering' }}
+  </button>
   <div class="flex justify-between">
-    <ItemDraggableList v-model="localItems" class="w-full" @nested-changed="trackChanges" />
+    <ItemDraggableList :isDraggable="reorderEnabled" v-model="localItems" class="w-full"
+      @nested-changed="trackChanges" />
+    <!-- For debugging only -->
     <pre>{{ JSON.stringify(localItems, null, 2) }}</pre>
   </div>
 </template>
