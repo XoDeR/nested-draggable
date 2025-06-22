@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, toRaw } from 'vue';
+import { ref, watch, computed, toRaw, onMounted, onUnmounted } from 'vue';
 import ItemDraggableList from './ItemDraggableList.vue';
 
 const props = defineProps({
@@ -22,7 +22,7 @@ const emit = defineEmits(['send-reordered-items'])
 // copy to use with v-model
 const localItems = ref(structuredClone(toRaw(props.items)));
 
-// List of {uuid, order, parent} to send
+// List of {uuid, order, parent, parentType} to send
 // Order is normalized e.g.: [0, 1, 2, 3]
 // for changes to send normalized orders are to be transformed to sparse orders
 const changes = ref([]);
@@ -189,9 +189,57 @@ const toggleReorderEnabled = () => {
   reorderEnabled.value = !reorderEnabled.value;
 }
 
+const hasUnsavedChanges = computed(() => changes.value.length > 0);
+
+// Show a warning if user navigates away and there are unsaved changes
+const handleBeforeUnload = (event) => {
+  if (hasUnsavedChanges.value) {
+    const confirmationMessage = 'Changes you made may not be saved.';
+    event.returnValue = confirmationMessage;
+    return confirmationMessage;
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+});
+
+// Debugging only
+// Simulate adding changes to check "Unsaved changes"
+setTimeout(() => {
+  changes.value.push({ uuid: 'FFFF', order: 0, parent: 'AAAA', parentType: 'qqqq' });
+}, 1000); // after 1 second
+
+setTimeout(() => {
+  changes.value.push({ uuid: 'FFEE', order: 0, parent: 'AAAA', parentType: 'qqqq' });
+}, 2000); // after 2 seconds
+
+setTimeout(() => {
+  const index = changes.value.findIndex(item => item.uuid === 'FFEE')
+  if (index !== -1) {
+    changes.value.splice(index, 1)
+  }
+}, 3000);
+
+// setTimeout(() => {
+//   const index = changes.value.findIndex(item => item.uuid === 'FFFF')
+//   if (index !== -1) {
+//     changes.value.splice(index, 1)
+//   }
+// }, 5000);
+//-- Debugging only
+
 </script>
 
 <template>
+  <span v-if="hasUnsavedChanges"
+    class="bg-yellow-400 text-[#333] px-[10px] py-[5px] rounded text-[0.8em] font-bold ml-[15px] inline-block">
+    Unsaved Changes!
+  </span>
   <button @click="saveChanges" :disabled="!changes.length" :class="[
     'm-2 p-1 border rounded',
     !changes.length ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
