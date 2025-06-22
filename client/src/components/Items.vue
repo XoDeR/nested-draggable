@@ -109,7 +109,6 @@ watch(
 const resetChangesAndState = () => {
   localItems.value = structuredClone(toRaw(props.items));
   resetChanges();
-  alert('Changes reset');
 }
 
 const sparseOrdersFromNormalized = (changes, previousItems) => {
@@ -200,30 +199,56 @@ const handleBeforeUnload = (event) => {
   }
 };
 
+// Ctrl+S, Ctrl+Z handler
+function handleKeyDown(e) {
+  // shortcut modifier key is being held -- Ctrl or Cmd (for Mac)
+  const isShortcut = e.metaKey || e.ctrlKey;
+  const key = e.key.toLowerCase();
+
+  // Ctrl+S
+  if (isShortcut && key === 's') {
+    if (hasUnsavedChanges.value === true) {
+      e.preventDefault();
+      saveChanges();
+    }
+  }
+
+  // Ctrl+Z
+  if (isShortcut && key === 'z') {
+    if (hasUnsavedChanges.value === true) {
+      e.preventDefault();
+      localItems.value = structuredClone(toRaw(props.items));
+      resetChanges();
+    }
+  }
+}
+
 onMounted(() => {
   window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('keydown', handleKeyDown)
 });
 
 onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
   window.removeEventListener('beforeunload', handleBeforeUnload);
 });
 
 // Debugging only
 // Simulate adding changes to check "Unsaved changes"
-setTimeout(() => {
-  changes.value.push({ uuid: 'FFFF', order: 0, parent: 'AAAA', parentType: 'qqqq' });
-}, 1000); // after 1 second
+// setTimeout(() => {
+//   changes.value.push({ uuid: 'FFFF', order: 0, parent: 'AAAA', parentType: 'qqqq' });
+// }, 1000); // after 1 second
 
-setTimeout(() => {
-  changes.value.push({ uuid: 'FFEE', order: 0, parent: 'AAAA', parentType: 'qqqq' });
-}, 2000); // after 2 seconds
+// setTimeout(() => {
+//   changes.value.push({ uuid: 'FFEE', order: 0, parent: 'AAAA', parentType: 'qqqq' });
+// }, 2000); // after 2 seconds
 
-setTimeout(() => {
-  const index = changes.value.findIndex(item => item.uuid === 'FFEE')
-  if (index !== -1) {
-    changes.value.splice(index, 1)
-  }
-}, 3000);
+// setTimeout(() => {
+//   const index = changes.value.findIndex(item => item.uuid === 'FFEE')
+//   if (index !== -1) {
+//     changes.value.splice(index, 1)
+//   }
+// }, 3000);
 
 // setTimeout(() => {
 //   const index = changes.value.findIndex(item => item.uuid === 'FFFF')
@@ -240,17 +265,17 @@ setTimeout(() => {
     class="bg-yellow-400 text-[#333] px-[10px] py-[5px] rounded text-[0.8em] font-bold ml-[15px] inline-block">
     Unsaved Changes!
   </span>
-  <button @click="saveChanges" :disabled="!changes.length" :class="[
+  <button @click="saveChanges" aria-keyshortcuts="Control+S Meta+S" :disabled="!changes.length" :class="[
     'm-2 p-1 border rounded',
     !changes.length ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
   ]">
     Save changes
   </button>
-  <button @click="resetChangesAndState" :disabled="!changes.length" :class="[
+  <button @click="resetChangesAndState" aria-keyshortcuts="Control+Z Meta+Z" :disabled="!changes.length" :class="[
     'm-2 p-1 border rounded',
     !changes.length ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
   ]">
-    Reset changes and state
+    Revert unsaved changes
   </button>
   <button @click="toggleReorderEnabled" class="p-2 m-2 border rounded">
     {{ reorderEnabled ? 'Disable reordering' : 'Enable reordering' }}
